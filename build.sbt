@@ -23,6 +23,12 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.36",
   "com.zaxxer" % "HikariCP-java6" % "2.3.3",
 
+  // xml, html
   "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.6",
-  "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2.1"
+  "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2.1",
+
+  // json
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.4",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.4"
+
 )
