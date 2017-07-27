@@ -1,7 +1,7 @@
 package ch_json
 
-
-import MarshallableImplicits._
+//import MarshallableImplicits._
+import JsonConvertImplicits._
 
 object JsonTest2 extends App {
 
