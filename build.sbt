@@ -8,15 +8,17 @@ lazy val akkaVersion = "2.4.19" // "2.5.3"
 
 
 libraryDependencies ++= Seq(
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.1",
   "com.typesafe" % "config" % "1.3.1",
 
   "org.apache.kafka" % "kafka-clients" % "0.11.0.0",
 
-//  "org.scala-lang" % "scala-actors" % "2.11.7",
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
   "com.typesafe.akka" %% "akka-http" % "10.0.9",
 
   "com.typesafe.slick" %% "slick" % "3.2.0",
