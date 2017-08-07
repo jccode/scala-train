@@ -31,7 +31,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % slickVersion,
   "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
   "com.typesafe.slick" %% "slick-codegen" % slickVersion,
+
+  // db driver
   "mysql" % "mysql-connector-java" % "5.1.36",
+  "org.xerial" % "sqlite-jdbc" % "3.8.7",
+  "org.postgresql" % "postgresql" % "42.1.4",
 
   // xml, html
   "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.6",
@@ -40,6 +44,7 @@ libraryDependencies ++= Seq(
   // json
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.4",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.4"
+
 )
 
 
@@ -52,6 +57,29 @@ hello := {
 }
 
 
+// custom functions
+val slickOutputFile = (basedir:String, pkg:String) => s"${basedir}/${pkg.replace(".","/")}/Tables.scala"
+
+def slickMySQL (url: String, user: String, password: String, pkg: String, srcdir: String) = {
+  val profile = "slick.jdbc.MySQLProfile"
+  val jdbcDriver = "com.mysql.jdbc.Driver"
+  (Array(profile, jdbcDriver, url, srcdir, pkg, user, password), slickOutputFile(srcdir, pkg))
+}
+
+def slickSQLite (dbfile: String, pkg: String, srcdir: String) = {
+  val profile = "slick.jdbc.SQLiteProfile"
+  val jdbcDriver = "org.sqlite.JDBC"
+  val url = s"jdbc:sqlite:${dbfile}"
+  (Array(profile, jdbcDriver, url, srcdir, pkg), slickOutputFile(srcdir, pkg))
+}
+
+def slickPostgres (url: String, user: String, password: String, pkg: String, srcdir: String) = {
+  val profile = "slick.jdbc.PostgresProfile"
+  val jdbcDriver = "org.postgresql.Driver"
+  (Array(profile, jdbcDriver, url, srcdir, pkg, user, password), slickOutputFile(srcdir, pkg))
+}
+
+
 // Slick task, code generator
 // ref: https://github.com/slick/slick-codegen-example
 lazy val slick = taskKey[Seq[File]]("gen-tables")
@@ -61,18 +89,12 @@ slick := {
   val r = (runner in Compile).value
   val s = streams.value
 
-  // place generated files in sbt's managed sources folder
   // val outputDir = (dir / "com/suyun/train/slick").getPath
   val outputDir = dir.getPath
-  val profile = "slick.jdbc.MySQLProfile"
-  val jdbcDriver = "com.mysql.jdbc.Driver"
-  val url = "jdbc:mysql://10.0.0.200:3306/vehicledb?useUnicode=true&amp;characterEncoding=utf-8"
-  val user = "suyun"
-  val password = "suyun123"
 
-  val pkg = "ch_slick.gen"
-  toError(r.run("slick.codegen.SourceCodeGenerator", cp.files, Array(profile, jdbcDriver, url, outputDir, pkg, user, password), s.log))
-  val fname = outputDir + "/ch_slick/gen/Tables.scala"
-  //  println(s"${dir}, ${cp}, ${r}, ${s}, ${outputDir}")
-  Seq(file(fname))
+  //val t = slickMySQL("jdbc:mysql://10.0.0.200:3306/vehicledb?useUnicode=true&amp;characterEncoding=utf-8", "suyun", "suyun123", "com.suyun.train.slick.gen", outputDir)
+  val t = slickPostgres("jdbc:postgresql://127.0.0.1:6432/postgres", "postgres", "postgres", "ch_slick.gen", outputDir)
+
+  toError(r.run("slick.codegen.SourceCodeGenerator", cp.files, t._1, s.log))
+  Seq(file(t._2))
 }
