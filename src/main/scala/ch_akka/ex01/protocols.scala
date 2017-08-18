@@ -1,4 +1,4 @@
-package ch_akka.protocol
+package ch_akka.ex01
 
 object StudentProtocol {
   case class InitSignal()

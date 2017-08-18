@@ -1,8 +1,8 @@
-package ch_akka
+package ch_akka.ex01
 
-import akka.actor.{Actor, ActorRef, ActorLogging}
-import ch_akka.protocol.StudentProtocol.{InitSignal, QuoteRequest}
-import ch_akka.protocol.TeacherProtocol.QuoteResponse
+import akka.actor.{Actor, ActorLogging, ActorRef}
+import ch_akka.ex01.StudentProtocol.{InitSignal, QuoteRequest}
+import ch_akka.ex01.TeacherProtocol.QuoteResponse
 
 import scala.util.Random
 

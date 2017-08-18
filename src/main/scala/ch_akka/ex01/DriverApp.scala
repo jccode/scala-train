@@ -1,7 +1,7 @@
-package ch_akka
+package ch_akka.ex01
 
-import akka.actor.{ActorRef, Props, ActorSystem}
-import ch_akka.protocol.StudentProtocol.InitSignal
+import akka.actor.{ActorSystem, Props}
+import ch_akka.ex01.StudentProtocol.InitSignal
 
 object DriverApp extends App {
   val system = ActorSystem("UniversityMessageSystem")

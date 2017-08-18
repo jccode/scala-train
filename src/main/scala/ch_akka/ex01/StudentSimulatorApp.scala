@@ -1,8 +1,7 @@
-package ch_akka
-
+package ch_akka.ex01
 
 import akka.actor._
-import ch_akka.protocol.StudentProtocol.QuoteRequest
+import ch_akka.ex01.StudentProtocol.QuoteRequest
 
 /**
  * Created by jcchen on 15-9-11.
