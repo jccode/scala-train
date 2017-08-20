@@ -1,6 +1,6 @@
 package ch_akka.iot
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, PoisonPill}
 import akka.testkit.{TestActorRef, TestProbe}
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.{FlatSpec, Matchers}
@@ -54,5 +54,46 @@ class DeviceGroupSpec extends FlatSpec with Matchers {
     val deviceActor2 = probe.lastSender
 
     deviceActor1 should equal(deviceActor2)
+  }
+
+  it should "be able to list active devices" in {
+    val probe = TestProbe()
+    val groupActor = TestActorRef(DeviceGroup.props("group"))
+
+    groupActor.tell(DeviceManager.RequestTrackDevice("group", "device1"), probe.ref)
+    probe.expectMsg(DeviceManager.DeviceRegistered)
+
+    groupActor.tell(DeviceManager.RequestTrackDevice("group", "device2"), probe.ref)
+    probe.expectMsg(DeviceManager.DeviceRegistered)
+
+    groupActor.tell(DeviceGroup.RequestDeviceList(requestId = 0), probe.ref)
+    probe.expectMsg(DeviceGroup.ReplyDeviceList(requestId = 0, Set("device1", "device2")))
+  }
+
+  it should "be able to list active devices after on shuts down" in {
+    val probe = TestProbe()
+    val groupActor = TestActorRef(DeviceGroup.props("group"))
+
+    groupActor.tell(DeviceManager.RequestTrackDevice("group", "device1"), probe.ref)
+    probe.expectMsg(DeviceManager.DeviceRegistered)
+    val toShutdown = probe.lastSender
+
+    groupActor.tell(DeviceManager.RequestTrackDevice("group", "device2"), probe.ref)
+    probe.expectMsg(DeviceManager.DeviceRegistered)
+
+    groupActor.tell(DeviceGroup.RequestDeviceList(requestId = 0), probe.ref)
+      probe.expectMsg(DeviceGroup.ReplyDeviceList(requestId = 0, Set("device1", "device2")))
+
+    probe.watch(toShutdown)
+    toShutdown ! PoisonPill
+    probe.expectTerminated(toShutdown)
+
+    // using awaitAssert to retry because it might take longer for the groupActor
+    // to see the Terminated, that order is undefined
+    probe.awaitAssert {
+      groupActor.tell(DeviceGroup.RequestDeviceList(requestId = 1), probe.ref)
+      probe.expectMsg(DeviceGroup.ReplyDeviceList(requestId = 1, Set("device2")))
+    }
+
   }
 }
