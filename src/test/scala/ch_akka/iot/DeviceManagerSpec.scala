@@ -1,14 +1,17 @@
 package ch_akka.iot
 
-import akka.actor.{ActorSystem, PoisonPill}
-import akka.testkit.{TestActorRef, TestProbe}
+import akka.actor.ActorSystem
+import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import ch_akka.iot.Device.{RecordTemperature, TemperatureRecorded}
 import ch_akka.iot.DeviceManager.{DeviceRegistered, ReplyGroupList, RequestGroupList, RequestTrackDevice}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
 
-class DeviceManagerSpec extends FlatSpec with Matchers {
+class DeviceManagerSpec(_system: ActorSystem) extends TestKit(_system) with FlatSpecLike with Matchers with BeforeAndAfterAll {
 
-  implicit val system = ActorSystem()
+  def this() = this(ActorSystem("DeviceManagerSpec"))
+
+  override protected def afterAll(): Unit = shutdown(system)
+  
 
   it should "be able to register a device actor" in {
     val probe = TestProbe()
@@ -90,4 +93,6 @@ class DeviceManagerSpec extends FlatSpec with Matchers {
 //      probe.expectMsg(ReplyGroupList(requestId = 1, Set("group2")))
 //    }
   }
+
+
 }
