@@ -95,6 +95,9 @@ slick := {
   //val t = slickMySQL("jdbc:mysql://10.0.0.200:3306/vehicledb?useUnicode=true&amp;characterEncoding=utf-8", "suyun", "suyun123", "com.suyun.train.slick.gen", outputDir)
   val t = slickPostgres("jdbc:postgresql://127.0.0.1:6432/postgres", "postgres", "postgres", "ch_slick.gen", outputDir)
 
-  toError(r.run("slick.codegen.SourceCodeGenerator", cp.files, t._1, s.log))
+  // toError(r.run("slick.codegen.SourceCodeGenerator", cp.files, t._1, s.log))
+  // Migrate to sbt 1.0.1 (ref: http://www.scala-sbt.org/1.0/docs/sbt-1.0-Release-Notes.html)
+  r.run("slick.codegen.SourceCodeGenerator", cp.files, t._1, s.log).failed foreach (sys error _.getMessage)
+
   Seq(file(t._2))
 }
