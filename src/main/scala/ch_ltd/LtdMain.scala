@@ -1,8 +1,13 @@
 package ch_ltd
 
 import ch_json.JsonUtil
+import ch_ltd.gen.Tables._
+import ch_ltd.gen.Tables.profile.api._
 
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.Source
+import scala.concurrent.duration._
 
 object LtdMain {
 
@@ -44,13 +49,29 @@ object LtdMain {
     toStock(r("jbzl"), stock)
   }
 
+  def hello2(): Unit = {
+    val dbfile = "ltd.sqlite3"
+    val dbfilePath = getClass.getClassLoader.getResource(dbfile).getPath
+    val jdbcDriver = "org.sqlite.JDBC"
+    val url = s"jdbc:sqlite:${dbfilePath}"
+
+    val db = Database.forURL(url, driver = jdbcDriver)
+    Await.result(
+      db.run(Company.result).map(result => {
+//        println(result.map(_.name).mkString("\n"))
+        println(result.size)
+      })
+      , 60 seconds)
+  }
+
   def main(args: Array[String]): Unit = {
-    val stocks = getStocks("a.txt")
-    val sh1 = stocks.filter(p => p.code.startsWith("6")).take(4)
-    for (s <- sh1) {
-      println(getStockInfo(s))
-    }
-//    hello()
+//    val stocks = getStocks("a.txt")
+//    val sh1 = stocks.filter(p => p.code.startsWith("6")).take(4)
+//    for (s <- sh1) {
+//      println(getStockInfo(s))
+//    }
+
+    hello2()
 
   }
 
