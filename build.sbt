@@ -2,7 +2,7 @@ name := "scala-train"
 
 version := "1.0"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
 lazy val akkaVersion = "2.4.19" // "2.5.3"
 lazy val slickVersion = "3.2.1"
@@ -43,8 +43,10 @@ libraryDependencies ++= Seq(
 
   // json
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.4",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.4"
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.4",
 
+  // jsoup
+  "org.jsoup" % "jsoup" % "1.9.1",
 )
 
 
