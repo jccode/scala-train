@@ -11,11 +11,12 @@ trait DatabaseRepository extends Repository {
 }
 
 trait UserService {
-  self: Repository => {
-    def create(user: User): Unit = {
-      save(user)
-    }
+  self: Repository =>
+
+  def create(user: User): Unit = {
+    save(user)
   }
+
 }
 
 class User
@@ -23,7 +24,7 @@ class User
 object di {
   def main(args: Array[String]): Unit = {
     val userService = new UserService with DatabaseRepository
-    userService.save(new User)
+    userService.create(new User)
   }
 }
 

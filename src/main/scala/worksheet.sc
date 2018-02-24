@@ -11,3 +11,7 @@ code
 
 val m = Map("foo" -> "bar", "tom" -> "cat")
 m("foo")
+
+case class Foo(a: String, b: Int, c: Double)
+Foo("a", 1, 1.0)
+
