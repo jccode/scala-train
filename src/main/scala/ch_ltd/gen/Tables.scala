@@ -39,7 +39,7 @@ trait Tables {
     def ? = (Rep.Some(id), Rep.Some(name), code, fullName, engName, webSite, lastUpdate).shaped.<>({r=>import r._; _1.map(_=> CompanyRow.tupled((_1.get, _2.get, _3, _4, _5, _6, _7)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INTEGER), PrimaryKey */
-    val id: Rep[Int] = column[Int]("id", O.PrimaryKey)
+    val id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
     /** Database column name SqlType(VARCHAR) */
     val name: Rep[String] = column[String]("name")
     /** Database column code SqlType(VARCHAR) */

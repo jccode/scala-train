@@ -58,21 +58,14 @@ object LtdMain {
     val db = Database.forURL(url, driver = jdbcDriver)
     Await.result(
       db.run(Company.result).map(result => {
-//        println(result.map(_.name).mkString("\n"))
+        println(result.map(_.name).mkString("\n"))
         println(result.size)
       })
       , 60 seconds)
   }
 
   def main(args: Array[String]): Unit = {
-//    val stocks = getStocks("a.txt")
-//    val sh1 = stocks.filter(p => p.code.startsWith("6")).take(4)
-//    for (s <- sh1) {
-//      println(getStockInfo(s))
-//    }
-
-    hello2()
-
+    hello()
   }
 
 }
