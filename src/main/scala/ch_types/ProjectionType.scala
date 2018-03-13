@@ -1,6 +1,6 @@
 package ch_types
 
-import scala.reflect.ClassTag
+import utils.CommonOpts
 
 /**
   * ProjectionType
@@ -12,19 +12,17 @@ import scala.reflect.ClassTag
   */
 object ProjectionType extends App {
 
-  def typeOf[T](t: T)(implicit ev: ClassTag[T]) = ev.toString
-
   val out1 = new Outer("out1")
   val in1 = new out1.Inner("in1")
   println(out1)
   println(in1)
-  println(typeOf(in1))
+  println(CommonOpts.typeOf(in1))
 
   val out2 = new Outer("out2")
   val in2 = new out2.Inner("in2")
   println(out2)
   println(in2)
-  println(typeOf(in2))
+  println(CommonOpts.typeOf(in2))
 
   println("-------------------")
   println(out1.getInnerNameBad(in1))

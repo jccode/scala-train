@@ -1,5 +1,7 @@
 package utils
 
+import scala.reflect.ClassTag
+
 object CommonOpts {
 
   def using[T <: { def close() }](resource: T)(block: T => Unit) = {
@@ -10,4 +12,5 @@ object CommonOpts {
     }
   }
 
+  def typeOf[T](t: T)(implicit ev: ClassTag[T]) = ev.toString
 }
