@@ -5,6 +5,9 @@ import scala.io.Source
 import Tables.Company
 import ch_json.JsonUtil
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 case class Record(name: String, code: String)
 
@@ -19,6 +22,7 @@ object RecordLoader {
       val pattern(name, code) = l
       Record(name, code)
     })
+
 }
 
 /**
@@ -36,15 +40,18 @@ object StockFetcher {
     s"http://emweb.securities.eastmoney.com/PC_HSF10/CompanySurvey/CompanySurveyAjax?code=$pre$code"
   }
 
-  def fetch(company: Company): Company = {
+  def fetch(company: Company): Future[Company] = {
     if (company.fullName.isDefined || company.lastUpdate.isDefined) {
-      return company
+      return Future(company)
     }
-    if (company.code.isEmpty) return company
-    val content = Source.fromURL(url(company.code.get)).mkString
-    val map = JsonUtil.toMap(content)
-    val retMap: Map[String, Map[String, String]] = map("Result")
-    val m = retMap("jbzl")
-    Company(company.id, company.name, company.code, Some(m("gsmc")), Some(m("ywmc")), Some(m("gswz")), Some(System.currentTimeMillis().toString))
+    if (company.code.isEmpty) return Future(company)
+
+    Future {
+      val content = Source.fromURL(url(company.code.get)).mkString
+      val map = JsonUtil.toMap(content)
+      val retMap: Map[String, Map[String, String]] = map("Result")
+      val m = retMap("jbzl")
+      Company(company.id, company.name, company.code, Some(m("gsmc")), Some(m("ywmc")), Some(m("gswz")), Some(System.currentTimeMillis().toString))
+    }
   }
 }

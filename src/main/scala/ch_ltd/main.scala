@@ -11,15 +11,22 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 object main extends App {
 
-//  CompanyRepo.exec(companies.take(10).result).foreach(println)
-  CompanyRepo.exec(companies.filter(_.code.startsWith("6")).take(10).result).map { list =>
-    list.foreach(println)
-    println("--- fetch ---")
-    list.foreach(c => {
-      println(StockFetcher.fetch(c))
-    })
+  def t1 = {
+    CompanyRepo.exec(companies.filter(_.code.startsWith("6")).take(10).result).map { list =>
+      list.foreach(println)
+      list.foreach(c => {
+        StockFetcher.fetch(c).foreach(println)
+      })
+    }
+    // block until future return.
+    System.in.read()
   }
 
-  // block until future return.
-  System.in.read()
+  def t2 = {
+//    CompanyRepo.find().map(l => l.foreach(println))
+    CompanyRepo.find(_.filter(_.code.startsWith("6")).take(10)).map{l => l.foreach(println)}
+    System.in.read()
+  }
+
+  t2
 }

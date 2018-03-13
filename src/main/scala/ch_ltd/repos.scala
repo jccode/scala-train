@@ -22,4 +22,6 @@ class DbConfig {
 object CompanyRepo extends DbConfig with Repo[Company] {
   override def save(list: Iterable[Company]): Future[Option[Int]] =
     db.run(companies ++= list)
+  def find(filter: TableQuery[CompanyTable] => Query[CompanyTable, Company, Seq] = identity): Future[Seq[Tables.Company]] =
+    db.run(filter(companies).result)
 }
