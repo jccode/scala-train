@@ -7,7 +7,7 @@ import akka.actor.{Actor, ActorLogging}
   *
   * @author 01372461
   */
-class Altimeter extends Actor with ActorLogging {
+class Altimeter extends Actor with ActorLogging with EventSource {
   import Altimeter._
   import scala.concurrent.duration._
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,16 +26,20 @@ class Altimeter extends Actor with ActorLogging {
 
   case object Tick
 
-  override def receive: Receive = {
+  def altimeterReceive: Receive = {
     case RateChange(amount) =>
       // Keep the value of rateOfClimb within [1,1]
       rateOfClimb = amount.min(1.0f).max(-1.0f) * maxRateOfClimb
       log.info(s"Altimeter changed rate of climb to $rateOfClimb.")
+
     case Tick =>
       val tick = System.currentTimeMillis()
       altitude = altitude + ((tick - lastTick) / 60000.0) * rateOfClimb
       lastTick = tick
+      sendEvent(AltitudeUpdate(altitude))
   }
+
+  override def receive: Receive = eventSourceReceive orElse altimeterReceive
 
   override def postStop(): Unit = ticker.cancel()
 }
@@ -44,4 +48,5 @@ object Altimeter {
 
   case class RateChange(amount: Float)
 
+  case class AltitudeUpdate(altitude: Double)
 }
