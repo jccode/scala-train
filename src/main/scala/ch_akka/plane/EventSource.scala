@@ -25,7 +25,7 @@ trait ProductionEventSource extends EventSource { this: Actor =>
       listeners = listeners :+ listener
 
     case UnregisterListener(listener) =>
-      listeners.filter { _ != listener}
+      listeners = listeners.filter { _ != listener}
   }
 }
 
