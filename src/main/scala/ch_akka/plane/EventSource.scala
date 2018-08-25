@@ -1,5 +1,6 @@
 package ch_akka.plane
 
+import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef}
 
 /**
@@ -7,7 +8,12 @@ import akka.actor.{Actor, ActorRef}
   *
   * @author 01372461
   */
-trait EventSource { this: Actor =>
+trait EventSource {
+  def sendEvent[T](event: T)
+  def eventSourceReceive: Receive
+}
+
+trait ProductionEventSource extends EventSource { this: Actor =>
   import EventSource._
 
   var listeners = Vector.empty[ActorRef]
@@ -21,7 +27,6 @@ trait EventSource { this: Actor =>
     case UnregisterListener(listener) =>
       listeners.filter { _ != listener}
   }
-
 }
 
 object EventSource {

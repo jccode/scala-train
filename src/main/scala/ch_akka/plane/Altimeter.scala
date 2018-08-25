@@ -7,7 +7,7 @@ import akka.actor.{Actor, ActorLogging}
   *
   * @author 01372461
   */
-class Altimeter extends Actor with ActorLogging with EventSource {
+class Altimeter extends Actor with ActorLogging { this: EventSource =>
   import Altimeter._
   import scala.concurrent.duration._
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -49,4 +49,6 @@ object Altimeter {
   case class RateChange(amount: Float)
 
   case class AltitudeUpdate(altitude: Double)
+
+  def apply(): Altimeter = new Altimeter with ProductionEventSource
 }
