@@ -18,7 +18,7 @@ object LeadFlightAttendant {
   // response msg
   case class Attendant(a: ActorRef)
 
-  def apply: LeadFlightAttendant = new LeadFlightAttendant() with AttendantCreationPolicy
+  def apply(): LeadFlightAttendant = new LeadFlightAttendant() with AttendantCreationPolicy
 }
 
 class LeadFlightAttendant extends Actor { this: AttendantCreationPolicy =>

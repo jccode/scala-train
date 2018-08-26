@@ -23,7 +23,7 @@ object Avionics extends App {
   val plane = system.actorOf(Props[Plane], "Plane")
 
   // Grab the controls
-  val controls = Await.result((plane ? GiveMeControl).mapTo[ActorRef], 5.seconds)
+  val controls = Await.result((plane ? GiveMeControl).mapTo[Plane.Control], 5.seconds).controlSurfaces
 
   // Takeoff
   system.scheduler.scheduleOnce(200.millis) {
