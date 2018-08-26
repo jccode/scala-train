@@ -1,6 +1,6 @@
 package ch_akka.plane
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
 import scala.util.Random
 
@@ -44,4 +44,12 @@ class LeadFlightAttendant extends Actor { this: AttendantCreationPolicy =>
     case m =>
       randomAttendant() forward m
   }
+}
+
+
+object LeadFlightAttendantPathChecker extends App {
+  val system = ActorSystem("FlightAttendantPathChecker")
+  val lead = system.actorOf(Props(new LeadFlightAttendant with AttendantCreationPolicy), "LeadFlightAttendant")
+  Thread.sleep(2000)
+  system.terminate()
 }
