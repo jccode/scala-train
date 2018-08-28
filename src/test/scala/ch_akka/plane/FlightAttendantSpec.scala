@@ -11,7 +11,7 @@ object TestFlightAttendant {
   }
 }
 
-class FlightAttendantSpec extends TestKit(ActorSystem("FlightAttendantSpec", ConfigFactory.parseString("akka.scheduler.tick-duration = 1ms")))
+class FlightAttendantSpec extends TestKit(ActorSystem("FlightAttendantSpec", ConfigFactory.parseString("akka.scheduler.tick-duration = 10ms")))
   with MustMatchers with WordSpecLike with ImplicitSender {
 
   import FlightAttendant._
