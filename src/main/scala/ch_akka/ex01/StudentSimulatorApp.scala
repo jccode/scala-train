@@ -13,7 +13,7 @@ object StudentSimulatorApp {
     val teacherActorRef:ActorRef = actorSystem.actorOf(Props[TeacherActor])
     teacherActorRef ! QuoteRequest
     Thread.sleep(2000)
-    actorSystem.shutdown()
+    actorSystem.terminate()
   }
 
 }

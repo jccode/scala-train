@@ -9,6 +9,6 @@ object DriverApp extends App {
   val studentRef = system.actorOf(Props(new StudentActor(teacherRef)), "studentActor")
   studentRef ! InitSignal
   Thread.sleep(2000)
-  system.shutdown()
+  system.terminate()
 }
 
