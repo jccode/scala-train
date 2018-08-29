@@ -29,9 +29,9 @@ libraryDependencies ++= Seq(
 
   // akka persistence
   "com.typesafe.akka" %% "akka-persistence" % "2.5.4",
-//  TODO fixed it
-//  "org.iq80.leveldb"            % "leveldb"          % "0.8",
-//  "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8",
+  "com.typesafe.akka" %% "akka-persistence-query" % "2.5.4",
+  "org.iq80.leveldb"            % "leveldb"          % "0.8",
+  "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8",
 
 
   // slick
