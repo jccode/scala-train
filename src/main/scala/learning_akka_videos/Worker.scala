@@ -7,10 +7,10 @@ class Worker extends Actor {
 
   override def receive: Receive = {
     case msg: Work =>
-      println(s"I received Work Message and My ActorRef is: $self")
+      println(s"I received Work Message ($msg) and My ActorRef is: $self")
   }
 }
 
 object Worker {
-  case class Work()
+  case class Work(msg: String = "")
 }

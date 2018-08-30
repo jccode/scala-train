@@ -4,7 +4,7 @@ version := "1.0"
 
 scalaVersion := "2.12.3"
 
-lazy val akkaVersion = "2.4.19" // "2.5.3", "2.4.19"
+lazy val akkaVersion = "2.5.4" // "2.5.3", "2.4.19"
 lazy val slickVersion = "3.2.1"
 
 
@@ -28,11 +28,13 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % "10.0.9",
 
   // akka persistence
-  "com.typesafe.akka" %% "akka-persistence" % "2.5.4",
-  "com.typesafe.akka" %% "akka-persistence-query" % "2.5.4",
+  "com.typesafe.akka" %% "akka-persistence" % akkaVersion,
+  "com.typesafe.akka" %% "akka-persistence-query" % akkaVersion,
   "org.iq80.leveldb"            % "leveldb"          % "0.8",
   "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8",
 
+  // akka remote
+  "com.typesafe.akka" %% "akka-remote" % akkaVersion,
 
   // slick
   "com.typesafe.slick" %% "slick" % slickVersion,
