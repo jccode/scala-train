@@ -1,4 +1,4 @@
-package learning_akka_videos.section3
+package learning_akka_videos
 
 import akka.actor.Actor
 

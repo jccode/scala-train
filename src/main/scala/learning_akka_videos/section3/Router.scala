@@ -1,7 +1,7 @@
 package learning_akka_videos.section3
 
 import akka.actor.{Actor, ActorRef, Props}
-import learning_akka_videos.section3.Worker.Work
+import learning_akka_videos.Worker
 
 import scala.util.Random
 

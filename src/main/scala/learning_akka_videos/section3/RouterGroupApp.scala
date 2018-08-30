@@ -1,7 +1,8 @@
 package learning_akka_videos.section3
 
 import akka.actor.{ActorSystem, Props}
-import learning_akka_videos.section3.Worker.Work
+import learning_akka_videos.Worker
+import learning_akka_videos.Worker.Work
 
 object RouterGroupApp extends App {
 
