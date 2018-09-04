@@ -20,7 +20,7 @@ object Avionics extends App {
 
   implicit val timeout = Timeout(5.seconds)
   val system = ActorSystem("PlaneSimulation")
-  val plane = system.actorOf(Props[Plane], "Plane")
+  val plane = system.actorOf(Props(Plane()), "Plane")
 
   // Grab the controls
   val controls = Await.result((plane ? GiveMeControl).mapTo[Plane.Control], 5.seconds).controlSurfaces

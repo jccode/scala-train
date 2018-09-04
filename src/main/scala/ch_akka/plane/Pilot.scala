@@ -9,24 +9,25 @@ object Pilot {
 }
 
 
-class Pilot extends Actor {
+class Pilot(plane: ActorRef, autopilot: ActorRef) extends Actor {
   import Plane._
 
   var controls: ActorRef = context.system.deadLetters
   var copilot: ActorRef = context.system.deadLetters
-  var autopilot: ActorRef = context.system.deadLetters
+//  var autopilot: ActorRef = context.system.deadLetters
   val copilotName: String = context.system.settings.config.getString("plane.avionics.flightcrew.copilotName")
+
 
   override def receive: Receive = {
     case ReadyToGo =>
-      context.parent ! Plane.GiveMeControl
+      plane ! Plane.GiveMeControl
       context.actorSelection(s"../$copilotName") ! Identify("copilot")
-      context.actorSelection("../AutoPilot") ! Identify("autopilot")
+//      context.actorSelection("../AutoPilot") ! Identify("autopilot")
 
     case ActorIdentity(id, Some(ref)) =>
       id match {
         case "copilot" => copilot = ref
-        case "autopilot" => autopilot = ref
+//        case "autopilot" => autopilot = ref
       }
 
     case Control(controlSurfaces) =>
@@ -35,7 +36,7 @@ class Pilot extends Actor {
     case RelinquishControl =>
       controls = context.system.deadLetters
       copilot = context.system.deadLetters
-      autopilot = context.system.deadLetters
+//      autopilot = context.system.deadLetters
   }
 }
 
