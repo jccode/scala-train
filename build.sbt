@@ -66,6 +66,8 @@ libraryDependencies ++= Seq(
 
   // jsoup
   "org.jsoup" % "jsoup" % "1.9.1",
+
+  "org.twitter4j" % "twitter4j-stream" % "4.0.7",
 )
 
 

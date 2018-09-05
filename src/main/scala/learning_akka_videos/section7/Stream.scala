@@ -5,7 +5,6 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
 
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 /**
@@ -16,7 +15,8 @@ import scala.concurrent.duration._
 object Stream extends App {
 
   implicit val actorSystem = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  import actorSystem.dispatcher   // ExecutorContext
 
   // Source
   val input = Source(1 to 1000)
