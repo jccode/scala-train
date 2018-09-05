@@ -35,8 +35,18 @@ libraryDependencies ++= Seq(
 
   // akka remote
   "com.typesafe.akka" %% "akka-remote" % akkaVersion,
+  "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
 
-  // slick
+  // akka stream
+  "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+  "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
+
+  // akka http
+  "com.typesafe.akka" %% "akka-http" % "10.0.9",
+  "com.typesafe.akka" %% "akka-http-testkit" % "10.0.9" % Test,
+
+
+// slick
   "com.typesafe.slick" %% "slick" % slickVersion,
   "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
   "com.typesafe.slick" %% "slick-codegen" % slickVersion,

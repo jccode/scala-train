@@ -28,9 +28,9 @@ class Plane extends Actor with ActorLogging {
   val altimeter = context.actorOf(Props(newAltimeter))
   val controls = context.actorOf(Props(new ControlSurfaces(altimeter)))
 
-  val pilot = context.actorOf(Props(newPilot), pilotName)
-  val copilot = context.actorOf(Props(newCoPilot), copilotName)
   val autopilot = context.actorOf(Props(newAutoPilot), "AutoPilot")
+  val pilot = context.actorOf(Props(newPilot(self, autopilot)), pilotName)
+  val copilot = context.actorOf(Props(newCoPilot), copilotName)
   val flightAttendant = context.actorOf(Props(newLeadFlightAttendant), leadAttendantName)
 
   override def receive: Receive = {
@@ -65,7 +65,7 @@ class Plane extends Actor with ActorLogging {
   def startPeople(): Unit = {
     val people = context.actorOf(Props(new IsolatedStopSupervisor with OneForOneStrategyFactory {
       override def childStarter(): Unit = {
-        context.actorOf(Props(newPilot), pilotName)
+        context.actorOf(Props(newPilot(self, copilot)), pilotName)
         context.actorOf(Props(newCoPilot), copilotName)
       }
     }), "Pilots")

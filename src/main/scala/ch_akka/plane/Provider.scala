@@ -1,13 +1,13 @@
 package ch_akka.plane
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
 
 /**
   * PilotProvider
   *
   */
 trait PilotProvider {
-  def newPilot: Actor = new Pilot
+  def newPilot(plane: ActorRef, autopilot: ActorRef): Actor = new Pilot(plane, autopilot)
   def newCoPilot: Actor = new CoPilot
   def newAutoPilot: Actor = new AutoPilot
 }
