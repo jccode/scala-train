@@ -1,8 +1,8 @@
 package learning_akka_videos.section7
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
+import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 
@@ -40,7 +40,4 @@ class SimpleStreamSpec extends TestKit(ActorSystem("test-system"))
     Await.result(result, 100.millis) must equal(1 to 4)
   }
 
-  it should "have a control over elements to be sent " in {
-    val sink = Flow[Int].map(_.toString).toMat()
-  }
 }

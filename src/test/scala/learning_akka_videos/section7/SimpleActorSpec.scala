@@ -1,10 +1,12 @@
 package learning_akka_videos.section7
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.{ActorMaterializer, OverflowStrategy}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
+
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
 
@@ -43,5 +45,18 @@ class SimpleActorSpec extends TestKit(ActorSystem("test-system"))
     probe.expectMsg(200.millis, Tick)
     runnable.cancel()
     probe.expectMsg(200.millis, "completed")
+  }
+
+  it should "have a control over elements to be sent " in {
+    val sink = Flow[Int].map(_.toString).toMat(Sink.fold("")(_ + _))(Keep.right)
+    val source = Source.actorRef(8, OverflowStrategy.fail)
+    val (ref, result) = source.toMat(sink)(Keep.both).run()
+
+    ref ! 1
+    ref ! 2
+    ref ! 3
+    ref ! akka.actor.Status.Success("done")
+
+    Await.result(result, 200.millis) must equal("123")
   }
 }
