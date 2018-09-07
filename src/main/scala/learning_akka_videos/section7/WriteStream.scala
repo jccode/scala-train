@@ -2,11 +2,13 @@ package learning_akka_videos.section7
 
 import java.nio.file.Paths
 
-import akka.NotUsed
+import akka.Done
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Broadcast, FileIO, Flow, GraphDSL, RunnableGraph, Sink, Source}
-import akka.stream.{ActorMaterializer, ClosedShape}
+import akka.stream.scaladsl.{Broadcast, FileIO, Flow, GraphDSL, Keep, RunnableGraph, Sink, Source}
+import akka.stream.{ActorMaterializer, ClosedShape, IOResult}
 import akka.util.ByteString
+
+import scala.concurrent.Future
 
 /**
   * WriteStream
@@ -17,6 +19,7 @@ object WriteStream extends App {
 
   implicit val actorSystem = ActorSystem()
   implicit val flowMaterializer = ActorMaterializer()
+  implicit val ec = actorSystem.dispatcher
 
   // source
   val source = Source(1 to 10000).filter(_ % 3 == 0)
@@ -25,22 +28,27 @@ object WriteStream extends App {
   val sink = FileIO.toPath(Paths.get("target/abc.txt"))
 
   // file output sink
-  val fileSink = Flow[Int]
-    .map(i => ByteString(i.toString))
-    .toMat(sink)
+  val fileSink: Sink[Int, Future[IOResult]] = Flow[Int]
+    .map(i => ByteString(i.toString+"\r\n"))
+    .toMat(sink)(Keep.right)
 
   // console output sink
-  val consoleSink = Sink.foreach[Int](println)
+  val consoleSink: Sink[Int, Future[Done]] = Sink.foreach[Int](println)
 
   // sent to both file sink & console sink
-  val g = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
-
-
+  val g = RunnableGraph.fromGraph(GraphDSL.create(fileSink, consoleSink)((_, _)) { implicit builder => (file, console) =>
+    import GraphDSL.Implicits._
     val broadCast = builder.add(Broadcast[Int](2))
 
-//    source ~> broadCast ~> fileSink
+    source ~> broadCast ~> file
+              broadCast ~> console
 
     ClosedShape
   })
 
+  val (fIO, fConsole) = g.run()
+  Future.sequence(List(fIO, fConsole)).onComplete { _ =>
+    println("Ok!")
+    actorSystem.terminate()
+  }
 }
