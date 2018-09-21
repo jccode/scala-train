@@ -5,13 +5,14 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Proxy
   *
   * @author 01372461
   */
-object Proxy extends App {
+object Proxy extends App with LazyLogging {
 
   implicit val system = ActorSystem("Proxy")
   implicit val materializer = ActorMaterializer()
@@ -19,7 +20,7 @@ object Proxy extends App {
 
   val proxy = Route { context =>
     val request = context.request
-    println("Opening connection to " + request.uri.authority.host.address)
+    logger.info("Opening connection to " + request.uri.authority.host.address + "; uri:" + request.uri)
     val flow = Http(system).outgoingConnection(request.uri.authority.host.address(), 80)
     val handler = Source.single(context.request)
       .via(flow)
