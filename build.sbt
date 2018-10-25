@@ -69,8 +69,13 @@ libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.9.1",
 
   "org.twitter4j" % "twitter4j-stream" % "4.0.7",
+
+  // cats
+  "org.typelevel" %% "cats-core" % "1.4.0",
 )
 
+// cats
+scalacOptions += "-Ypartial-unification"
 
 // sbt custom task demo
 
