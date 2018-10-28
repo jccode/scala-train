@@ -1,7 +1,6 @@
 package ch_cats
 
 import scala.language.higherKinds
-import scala.util.Try
 
 
 trait Monad[F[_]] {
@@ -85,12 +84,18 @@ object WriterMonadExercise {
 
   def factorial2(n: Int): Logged[Int] = {
     val tname = Thread.currentThread().getName
-    val t = for {
+    for {
       _ <- Vector(s"[$tname] trying $n").tell
       ans <- slowly(if (n == 0) 1.pure[Logged] else factorial2(n-1).map(_ * n))
       _ <- Vector(s"[$tname] fact $n $ans").tell
     } yield ans
-    t
+  }
+
+  def factorial3(n: Int): Logged[Int] = {
+    val tname = Thread.currentThread().getName
+    Vector(s"[$tname] trying $n").tell
+      .flatMap(_ => slowly(if (n == 0) 1.pure[Logged] else factorial3(n-1).map(_ * n)))
+      .flatMap(ans => Writer(Vector(s"[$tname] fact $n $ans"), ans))
   }
 }
 
@@ -115,8 +120,8 @@ object WriterMonadExerciseApp extends App {
   // writer monad
   def multiThreadWriter(): Unit = {
     val list = Await.result(Future.sequence(List(
-      Future(factorial2(5)),
-      Future(factorial2(5)),
+      Future(factorial2(3)),
+      Future(factorial3(3)),
     )), 5 seconds)
 
     list.foreach { w =>
