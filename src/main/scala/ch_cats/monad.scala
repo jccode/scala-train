@@ -2,18 +2,23 @@ package ch_cats
 
 import scala.language.higherKinds
 
+// p83.
 
-trait Monad[F[_]] {
-  def pure[A](a: A): F[A]
+object MonadDefExercise {
 
-  def flatMap[A, B](value: F[A])(func: A => F[B]): F[B]
+  trait Monad[F[_]] {
+    def pure[A](a: A): F[A]
 
-  def map[A, B](value: F[A])(func: A => B): F[B] =
-    flatMap(value)(x => pure(func(x)))
-}
+    def flatMap[A, B](value: F[A])(func: A => F[B]): F[B]
 
-object Monad {
-  def apply[F[_]](implicit m: Monad[F]) = m
+    def map[A, B](value: F[A])(func: A => B): F[B] =
+      flatMap(value)(x => pure(func(x)))
+  }
+
+  object Monad {
+    def apply[F[_]](implicit m: Monad[F]) = m
+  }
+
 }
 
 
@@ -46,6 +51,8 @@ object EvalExerciseApp extends App {
 
 
 object IdExample {
+  import MonadDefExercise.Monad
+
   type Id[A] = A
   implicit val idMonad = new Monad[Id] {
     override def pure[A](a: A): Id[A] = a
@@ -54,6 +61,7 @@ object IdExample {
 }
 
 object IdExampleApp extends App {
+  import MonadDefExercise._
   import IdExample._
 
   val m = Monad[Id]
@@ -181,4 +189,26 @@ object ReaderExerciseApp extends App {
 
   println(checkLogin(1, "zerocool").run(db))
   println(checkLogin(4, "davini").run(db))
+}
+
+object TreeMonadInstance {
+  import cats.Monad
+  import Tree._
+
+  implicit val treeMonad = new Monad[Tree] {
+    override def pure[A](x: A): Tree[A] = leaf(x)
+
+    override def flatMap[A, B](fa: Tree[A])(f: A => Tree[B]): Tree[B] = fa match {
+      case Leaf(value) => f(value)
+      case Branch(left, right) => branch(flatMap(left)(f), flatMap(right)(f))
+    }
+
+    override def tailRecM[A, B](a: A)(f: A => Tree[Either[A, B]]): Tree[B] =
+      f(a) match {
+        case Leaf(Left(value)) => tailRecM(value)(f)
+        case Leaf(Right(value)) => Leaf(value)
+        case Branch(left, right) => ???
+      }
+
+  }
 }

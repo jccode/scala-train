@@ -1,21 +1,8 @@
 package ch_cats
 
-// p61. Tree definition
-sealed trait Tree[+A]
-
-final case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
-final case class Leaf[A](value: A) extends Tree[A]
-
-
-object Tree {
-  // helper functions
-  def branch[A](left: Tree[A], right: Tree[A]): Tree[A] = Branch(left, right)
-  def leaf[A](value: A): Tree[A] = Leaf(value)
-}
-
 
 // cats instance
-object TreeInstances {
+object TreeFunctorInstances {
   import cats.Functor
 
   // Functor instances
@@ -34,7 +21,7 @@ object TreeApp extends App {
   import cats._
   import cats.syntax.functor._
   import Tree._
-  import TreeInstances._
+  import TreeFunctorInstances._
 
   val tree: Tree[Int] = Branch(Branch(Leaf(1), Leaf(2)), Leaf(4))
   println(tree)
