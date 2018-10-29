@@ -137,3 +137,48 @@ object WriterMonadExerciseApp extends App {
   multiThreadWriter()
 
 }
+
+object ReaderExercise {
+  case class Db(usernames: Map[Int, String], passwords: Map[String, String])
+
+  import cats.syntax.applicative._
+  import cats.data.Reader
+  type DbReader[A] = Reader[Db, A]
+
+  def findUsername(userId: Int): DbReader[Option[String]] =
+    Reader[Db, Option[String]](_.usernames.get(userId))
+
+  def checkPassword(username: String, password: String): DbReader[Boolean] =
+    Reader[Db, Boolean](_.passwords.get(username).exists(_ == password))
+
+  def checkLogin(userId: Int, password: String): DbReader[Boolean] =
+    for {
+      username <- findUsername(userId)
+      ans <- if (username.isEmpty) false.pure[DbReader] else checkPassword(username.get, password)
+    } yield ans
+
+  def checkLogin2(userId: Int, password: String): DbReader[Boolean] =
+    findUsername(userId).flatMap {
+      case None => false.pure[DbReader]
+      case Some(username) => checkPassword(username, password)
+    }
+}
+
+object ReaderExerciseApp extends App {
+  import ReaderExercise._
+
+  val users = Map(
+    1 -> "dade",
+    2 -> "kate",
+    3 -> "margo"
+  )
+  val passwords = Map(
+    "dade" -> "zerocool",
+    "kate" -> "acidburn",
+    "margo" -> "secret"
+  )
+  val db = Db(users, passwords)
+
+  println(checkLogin(1, "zerocool").run(db))
+  println(checkLogin(4, "davini").run(db))
+}
