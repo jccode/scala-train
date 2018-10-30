@@ -207,8 +207,34 @@ object TreeMonadInstance {
       f(a) match {
         case Leaf(Left(value)) => tailRecM(value)(f)
         case Leaf(Right(value)) => Leaf(value)
-        case Branch(left, right) => ???
+        case Branch(left, right) => branch(
+          flatMap(left) {
+            case Left(value) => tailRecM(value)(f)
+            case Right(value) => pure(value)
+          },
+          flatMap(right) {
+            case Left(value) => tailRecM(value)(f)
+            case Right(value) => pure(value)
+          }
+        )
       }
 
   }
+}
+
+object TreeMonadExerciseApp extends App {
+  import Tree._
+  import TreeMonadInstance._
+  import cats.syntax.functor._
+  import cats.syntax.flatMap._
+
+  val t1: Tree[Int] = branch(leaf(100), leaf(200)).flatMap(x => branch(leaf(x - 1), leaf(x + 1)))
+  println(t1)
+
+  val t2 = for {
+    a <- branch(leaf(100), leaf(200))
+    b <- branch(leaf(a - 10), leaf(a + 10))
+    c <- branch(leaf(b - 1), leaf(b + 1))
+  } yield c
+  println(t2)
 }
