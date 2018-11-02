@@ -26,10 +26,10 @@ object FormValidateExercise {
       .leftMap(_ => List(s"$name must be an integer"))
 
   def nonBlank(name: String)(data: String): FailFast[String] =
-    Right(data).ensure(List(s"$name cannot be blank"))(_.nonEmpty)
+    Right[List[String], String](data).ensure(List(s"$name cannot be blank"))(_.nonEmpty)
 
   def nonNegative(name: String)(data: Int): FailFast[Int] =
-    Right(data).ensure(List(s"$name must be non-negative"))(_ >= 0)
+    Right[List[String], Int](data).ensure(List(s"$name must be non-negative"))(_ >= 0)
 
   def readName(data: FormData): FailFast[String] =
     getName(data).flatMap(nonBlank("name"))
@@ -41,7 +41,7 @@ object FormValidateExercise {
       .flatMap(nonNegative("age"))
 
   def readUser(data: FormData): FailSlow[User] =
-    (readName(data).toValidated, readAge(data).toValidated).mapN(User.apply)
+    (readName(data).toValidated, readAge(data).toValidated).mapN(User.apply _)
 }
 
 
@@ -86,4 +86,20 @@ object FormValidateApp extends App {
   }
 
   readUser_test()
+}
+
+
+/**
+  * semigroupal
+  *
+  * @author 01372461
+  */
+object semigroupal extends App {
+
+  import cats.Semigroupal
+  import cats.instances.option._
+
+  val semi: Semigroupal[Option] = Semigroupal[Option]
+  semi.product(Some(123), Some("abc"))
+  println(Semigroupal.tuple2(Option(123), Option("abc")))
 }
