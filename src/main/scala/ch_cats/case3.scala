@@ -5,8 +5,8 @@ import cats.kernel.Semigroup
 import cats.syntax.semigroup._
 import cats.syntax.either._
 import cats.syntax.validated._
-import cats.syntax.apply._
 import cats.instances.list._
+import cats.syntax.apply._
 import ch_cats.Part4.Predicate
 
 object Part1 {
@@ -168,6 +168,10 @@ object Part4 {
     def apply(a: A)(implicit s: Semigroup[E]): Validated[E, B]
 
     def map[C](f: B => C): Check[E, A, C] = Map(this, f)
+
+    def flatMap[C](f: B => Check[E, A, C]) = FlatMap(this, f)
+
+    def andThen[C](that: Check[E, B, C]) = AndThen(this, that)
   }
 
   object Check {
@@ -183,8 +187,21 @@ object Part4 {
     final case class Map[E, A, B, C](check: Check[E, A, B], func: B => C) extends Check[E, A, C] {
       override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, C] = check(a).map(func)
     }
-  }
 
+    final case class FlatMap[E, A, B, C](check: Check[E, A, B], func: B => Check[E, A, C]) extends Check[E, A, C] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, C] = check(a).withEither( _.flatMap{x: B =>
+        func(x)(a).toEither
+      })
+    }
+
+    final case class AndThen[E, A, B, C](check1: Check[E, A, B], check2: Check[E, B, C]) extends Check[E, A, C] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, C] = check1(a).withEither(_.flatMap(b => check2(b).toEither))
+    }
+
+    def apply[E, A](predicate: Predicate[E, A]) = PurePredicate(predicate)
+
+    def apply[E, A, B](func: A => Validated[E, B]) = Pure(func)
+  }
 }
 
 object Part4TestApp extends App {
@@ -217,5 +234,104 @@ object Part4TestApp extends App {
     println(b(5))
   }
 
-  map_test()
+  def flatMap_test(): Unit = {
+    val pa = Predicate[List[String], Int](v => if (v > 2) v.valid else List("Must be > 2").invalid)
+    val pb = Predicate.lift[List[String], Int](List("Must be < -2"), v => v < -2)
+    val c1 = Check.PurePredicate(pa)
+    val c2 = Check.PurePredicate(pb)
+
+    val t1 = c1.flatMap(_ => c2)
+    println(t1(5))
+    println(t1(1))
+    println(t1(-5))
+  }
+
+  def andThen_test(): Unit = {
+    val pa = Predicate[List[String], Int](v => if (v > 2) v.valid else List("Must be > 2").invalid)
+    val pb = Predicate.lift[List[String], Int](List("Must be < -2"), v => v < -2)
+    val c1 = Check.PurePredicate(pa)
+    val c2 = Check.PurePredicate(pb)
+
+    val t1 = c1 andThen c2
+    println(t1(5))
+    println(t1(1))
+    println(t1(-5))
+  }
+
+}
+
+object CheckTestApp extends App {
+  import cats.data.{NonEmptyList, Validated}
+  import Part4._
+
+  type Errors = NonEmptyList[String]
+
+  def error(s: String): NonEmptyList[String] = NonEmptyList(s, Nil)
+
+  def longerThan(n: Int): Predicate[Errors, String] = Predicate.lift(
+    error(s"Must be longer than $n characters"),
+    s => s.size > n)
+
+  def alphanumeric: Predicate[Errors, String] = Predicate.lift(
+    error(s"Must be all alphanumeric characters"),
+    s => s.forall(_.isLetterOrDigit)
+  )
+
+  def contains(char: Char): Predicate[Errors, String] = Predicate.lift(
+    error(s"Must contain the character $char"),
+    s => s.contains(char)
+  )
+
+  def containsOnce(char: Char): Predicate[Errors, String] = Predicate.lift(
+    error(s"Must contain the character $char only once"),
+    str => str.count(c => c == char) == 1
+  )
+
+
+  /**
+    * A username must contain at least four characters and consist en rely of alphanumeric characters
+    *
+    * @return
+    */
+  def checkUsername: Check[Errors, String, String] =
+    Check(longerThan(3) and alphanumeric)
+
+  /**
+    * An email address must contain an @ sign.
+    * Split the string at the @. The string to the left  must not be empty.
+    * The string to the right must be at least three characters long and contain a dot.
+    *
+    * @param email
+    * @return
+    */
+  def checkEmail: Check[Errors, String, String] = {
+
+    val splitEmail: Check[Errors, String, (String, String)] = Check(_.split('@') match {
+      case Array(name, domain) => (name, domain).validNel
+      case other => "Must contain a single @ character".invalidNel
+    })
+    val checkLeft = Check(longerThan(0))
+    val checkRight = Check(longerThan(2) and contains('.'))
+
+    val joinEmail: Check[Errors, (String, String), String] = Check[Errors, (String, String), String] {
+      case (l, r) => (checkLeft(l), checkRight(r)).mapN(_ + "@" + _)
+    }
+
+    splitEmail andThen joinEmail
+  }
+
+
+  final case class User(username: String, email: String)
+
+  def createUser(username: String, email: String): Validated[Errors, User] =
+    (checkUsername(username), checkEmail(email)).mapN(User)
+
+
+  // create user test
+  List(
+    createUser("Noel", "noel@underscore.io"),
+    createUser("", "dave@underscore@io"),
+
+  ).foreach(println)
+
 }
