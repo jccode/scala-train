@@ -72,6 +72,9 @@ libraryDependencies ++= Seq(
 
   // cats
   "org.typelevel" %% "cats-core" % "1.4.0",
+
+  // shapeless
+  "com.chuusai" %% "shapeless" % "2.3.3"
 )
 
 // cats
