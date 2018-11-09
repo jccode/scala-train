@@ -1,6 +1,6 @@
 package ch_shapeless
 
-import shapeless.{:+:, ::, CNil, Coproduct, Generic, HList, HNil, Inl, Inr}
+import shapeless.{:+:, ::, CNil, Coproduct, Generic, HList, HNil, Inl, Inr, Lazy}
 
 /**
   * ch03
@@ -36,13 +36,13 @@ object ch03 {
 
     // Coproduct encoder
     implicit val cnilEncoder: CsvEncoder[CNil] = instance[CNil](x => throw new Exception("Inconceivable!"))
-    implicit def coproductEncoder[L, R <: Coproduct](implicit lEncoder: CsvEncoder[L], rEncoder: CsvEncoder[R]): CsvEncoder[L :+: R] = instance[L :+: R] {
-      case Inl(l) => lEncoder.encode(l)
+    implicit def coproductEncoder[L, R <: Coproduct](implicit lEncoder: Lazy[CsvEncoder[L]], rEncoder: CsvEncoder[R]): CsvEncoder[L :+: R] = instance[L :+: R] {
+      case Inl(l) => lEncoder.value.encode(l)
       case Inr(r) => rEncoder.encode(r)
     }
 
     // Given a type A and HList type R, an implicit Generic to map A to R, and a CsvEncoder for R, create a CsvEncoder for A
-    implicit def genericEncoder[A, R](implicit gen: Generic.Aux[A, R], enc: CsvEncoder[R]): CsvEncoder[A] = instance[A](x => enc.encode(gen.to(x)))
+    implicit def genericEncoder[A, R](implicit gen: Generic.Aux[A, R], enc: Lazy[CsvEncoder[R]]): CsvEncoder[A] = instance[A](x => enc.value.encode(gen.to(x)))
   }
 
   def writeCsv[A](values: List[A])(implicit enc: CsvEncoder[A]): String = values.map(enc.encode(_).mkString(",")).mkString("\n")
@@ -70,6 +70,16 @@ object CsvEncoderApp extends App {
     println(writeCsv(List[Shape](Rectangle(3.0, 4.0), Circle(1.0))))
   }
 
+  def treeTest(): Unit = {
+    import Tree._
+    val treeEncoder = CsvEncoder[Tree[Int]]
+    val tree = branch[Int](leaf(12), branch(leaf(10), leaf(5)))
+    println(treeEncoder.encode(tree))
+  }
+
+
+  productTest()
   coproductTest()
+  treeTest()
 }
 
