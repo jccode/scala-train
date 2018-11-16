@@ -1,8 +1,7 @@
 package ch_shapeless
 
-import shapeless.{Generic, HList, LabelledGeneric, Poly, Poly1, Witness}
 import shapeless.labelled.FieldType
-import shapeless.ops.hlist.Mapper
+import shapeless.{::, Generic, HList, HNil, LabelledGeneric, Poly, Poly1, Witness}
 
 
 object LabelledGenericTest extends App {
@@ -36,6 +35,15 @@ trait JsonEncoder[A] {
   def encode(value: A): JsonValue
 }
 
+trait JsonObjectEncoder[A <: HList] extends JsonEncoder[A] {
+  def encode(value: A): JsonObject
+}
+
+object JsonObjectEncoder {
+  def instance[A <: HList](func: A => JsonObject): JsonObjectEncoder[A] = (value: A) => func(value)
+}
+
+
 object JsonEncoder {
   // "summoner" method
   def apply[A](implicit encoder: JsonEncoder[A]) = encoder
@@ -55,8 +63,15 @@ object JsonEncoder {
   implicit val numberEncoder = instance[Double](x => JsonNumber(x))
   implicit val booleanEncoder = instance[Boolean](x => JsonBoolean(x))
   implicit val nullEncoder = instance[Null](x => JsonNull)
+
   implicit def arrayEncoder[A](implicit encoder: JsonEncoder[A]): JsonEncoder[List[A]] =
     instance[List[A]](x => JsonArray(x.map(encoder.encode)))
+
+  implicit def optionEncoder[A](implicit encoder: JsonEncoder[A]): JsonEncoder[Option[A]] =
+    instance[Option[A]] {
+      case None => JsonNull
+      case Some(a) => encoder.encode(a)
+    }
 
   // implement 01, map over HList.
   /*
@@ -69,13 +84,46 @@ object JsonEncoder {
     })
     */
 
+
+  // hlist implement
+  implicit val hnilEncoder = instance[HNil](x => JsonNull)
+  implicit def hlistEncoder[K <: Symbol, V, T <: HList](implicit w: Witness.Aux[K], hEncoder: JsonEncoder[V], tEncoder: JsonObjectEncoder[T]) =
+    instance[FieldType[K, V] :: T] {
+      case h :: t => {
+        val fieldName: String = getFieldName(h)
+        val fieldValue: V = getFieldValue(h)
+        //val list = tEncoder.encode(t)
+        JsonObject((fieldName -> hEncoder.encode(fieldValue)) :: tEncoder.encode(t).fields) // 这里需要加约束,要不没法写.
+      }
+  }
+
+
+  implicit def genericEncoder[A, R <: HList](implicit gen: LabelledGeneric.Aux[A, R], encoder: JsonObjectEncoder[R]): JsonEncoder[A] =
+    JsonObjectEncoder.instance[A](x => encoder.encode(gen.to(x)))
+
   // TODO implement 02, 例子中是怎么实现的？
 }
 
 
 object JsonEncoderApp extends App {
-  val employee = Employee("Hello", 19, true)
-//  val encoder = JsonEncoder[Employee]
-//  val json = encoder.encode(employee)
-//  println(json)
+
+//  def employeeTest(): Unit = {
+//    val employee = Employee("Hello", 19, true)
+//    val encoder = JsonEncoder[Employee]
+//    val json = encoder.encode(employee)
+//    println(json)
+//  }
+
+  def simpleTest(): Unit = {
+    val encoder = JsonEncoder[Option[String]]
+    println(encoder.encode(Some("hello")))
+  }
+
+  simpleTest()
+//  employeeTest()
+
+
+  import scala.reflect.runtime.universe._
+
+  println(reify(JsonEncoder[Employee]))
 }
