@@ -1,6 +1,7 @@
 package utils
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
 
 object CommonOpts {
 
@@ -12,5 +13,7 @@ object CommonOpts {
     }
   }
 
-  def typeOf[T](t: T)(implicit ev: ClassTag[T]) = ev.toString
+  def classOf[T](t: T)(implicit ev: ClassTag[T]) = ev.toString
+
+  def typeOf[T](t: T)(implicit ev: TypeTag[T]) = ev.toString
 }

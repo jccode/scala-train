@@ -13,7 +13,7 @@ object ProjectionType3 extends App {
   private val client = new Client(holder)
 //  client.showElementType(foo) // TODO why compile error this line?
   println("--------")
-  println(CommonOpts.typeOf(client.holder))
+  println(CommonOpts.classOf(client.holder))
 }
 
 class Foo
@@ -28,6 +28,6 @@ class Client[T <: TypeHolder[_]](val holder: T) {
 
   def showElementType(t: T#ElementType): Unit = {
     println("show element type")
-    println(CommonOpts.typeOf(t))
+    println(CommonOpts.classOf(t))
   }
 }

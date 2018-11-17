@@ -16,13 +16,13 @@ object ProjectionType extends App {
   val in1 = new out1.Inner("in1")
   println(out1)
   println(in1)
-  println(CommonOpts.typeOf(in1))
+  println(CommonOpts.classOf(in1))
 
   val out2 = new Outer("out2")
   val in2 = new out2.Inner("in2")
   println(out2)
   println(in2)
-  println(CommonOpts.typeOf(in2))
+  println(CommonOpts.classOf(in2))
 
   println("-------------------")
   println(out1.getInnerNameBad(in1))
