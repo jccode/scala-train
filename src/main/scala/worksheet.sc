@@ -19,3 +19,15 @@ v2.head
 
 getFieldName(v2.last)
 getFieldValue(v2.last)
+
+("hello", 132)
+"Hello" ->> 1132
+'Hello
+'Hello ->> 123
+"hello".narrow
+
+val list = 1 to 100
+list.head
+list.tail
+list.init
+list.last
