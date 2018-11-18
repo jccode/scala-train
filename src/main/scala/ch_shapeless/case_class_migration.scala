@@ -20,16 +20,16 @@ case class IceCreamV2c(name: String, inCone: Boolean, numCherries: Int, numWaffl
 
 object MigrateTestApp extends App {
   import Migration._
-  import cats.instances._
+  import cats.instances.all._
 
   println("hello")
   val v1 = IceCreamV1("Sundae", 1, false)
   val v2a = v1.migrateTo[IceCreamV2a]
   val v2b = v1.migrateTo[IceCreamV2b]
-//  val v2c = v1.migrateTo[IceCreamV2c]
+  val v2c = v1.migrateTo[IceCreamV2c]
   println(v2a)
   println(v2b)
-//  println(v2c)
+  println(v2c)
 }
 
 
@@ -62,11 +62,11 @@ object Migration {
       bGen.from(rb)
     }
 
+
   // migrateTo syntax
   implicit class MigrationOps[A](a: A) {
     def migrateTo[B](implicit m: Migration[A, B]): B = m.apply(a)
   }
-
 
 
   // hlist monoid implement
@@ -77,24 +77,10 @@ object Migration {
 
   implicit val hnilMonoid: Monoid[HNil] = createMonoid[HNil](HNil)((_, _) => HNil)
 
-  /*
-  implicit def hlistMonoid[H, L <: HList](implicit hMonoid: Lazy[Monoid[H]], tMonoid: Monoid[L]): Monoid[H :: L] =
-    createMonoid[H :: L](hMonoid.value.empty :: tMonoid.empty)((x, y) =>
-      hMonoid.value.combine(x.head, y.head) :: tMonoid.combine(x.tail, y.tail)
-    )
-    */
-
   implicit def hlistMonoid[K <: Symbol, H, L <: HList](implicit hMonoid: Lazy[Monoid[H]], tMonoid: Monoid[L]): Monoid[FieldType[K, H] :: L] =
     createMonoid[FieldType[K, H] :: L](field[K](hMonoid.value.empty) :: tMonoid.empty)((x, y) =>
       field[K](hMonoid.value.combine(x.head, y.head)) :: tMonoid.combine(x.tail, y.tail)
     )
-
-
-  /*
-  implicit def hlistMonoid[K <: Symbol, H, L <: HList]
-  (implicit hMonoid: Lazy[Monoid[H]], tMonoid: Monoid[L]): Monoid[FieldType[K, H] :: L] =
-    ???
-    */
 
 }
 
