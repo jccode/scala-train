@@ -1,33 +1,44 @@
-import shapeless.{Generic, LabelledGeneric, Witness}
-import shapeless.syntax.singleton._
-import shapeless.labelled.{FieldType, KeyTag, field}
+import shapeless.Generic
+import shapeless.{::, HList, HNil}
+import shapeless.ops.hlist.{Diff, Intersection, Prepend}
 
-case class Employee(name: String, number: Int, manager: Boolean)
+case class IceCreamV1(name: String, numCherries: Int, inCone: Boolean)
 
-val gen = Generic[Employee]
-val gen2 = LabelledGeneric[Employee]
+// Remove fields
+case class IceCreamV2a(name: String, inCone: Boolean)
 
-val employee = Employee("tom", 19, true)
-val v1 = gen.to(employee)
-val v2 = gen2.to(employee)
+// Reorder fields
+case class IceCreamV2b(name: String, inCone: Boolean, numCherries: Int)
 
-def getFieldValue[K, V](v: FieldType[K, V]): V = v
-def getFieldName[K <: Symbol, V](v: FieldType[K, V])(implicit w: Witness.Aux[K]): String =
-  w.value.name
+// Insert fields (provided we can determine a default value):
+case class IceCreamV2c(name: String, inCone: Boolean, numCherries: Int, numWaffles: Int)
 
-v2.head
+val g1 = Generic[IceCreamV1]
+val g2a = Generic[IceCreamV2a]
 
-getFieldName(v2.last)
-getFieldValue(v2.last)
+val v1 = IceCreamV1("Sundae", 1, false)
+val h1 = g1.to(v1)
 
-("hello", 132)
-"Hello" ->> 1132
-'Hello
-'Hello ->> 123
-"hello".narrow
+val v2a = IceCreamV2a("Sundae", false)
+val h2a = g2a.to(v2a)
 
-val list = 1 to 100
-list.head
-list.tail
-list.init
-list.last
+type HV1 = String :: Int :: Boolean :: HNil
+type HV2a = String :: Boolean :: HNil
+type HV2b = String :: Boolean :: Int :: HNil
+type HV2c = String :: Boolean :: Int :: Int :: HNil
+
+val intera = Intersection[HV1, HV2a]
+intera.apply(h1)
+
+val interb = Intersection[HV1, HV2b]
+interb.apply(h1)
+
+val interc = Intersection[HV1, HV2c]
+interc.apply(h1)
+
+Intersection[HV1, String :: Int :: Boolean :: Int :: HNil]
+
+Diff[HV1, HV2a]
+Diff[HV1, HV2b]
+Diff[HV2c, HV1]
+Diff[Int :: Boolean :: String :: String :: HNil, HV1]
