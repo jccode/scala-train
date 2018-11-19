@@ -1,7 +1,7 @@
 package ch_shapeless
 
 import shapeless.ops.hlist.Mapper
-import shapeless.{::, HList, HNil, LabelledGeneric, Poly, Poly1, Poly2}
+import shapeless.{::, Generic, HList, HNil, LabelledGeneric, Poly, Poly1, Poly2}
 
 object ch07 {
 
@@ -62,8 +62,8 @@ trait ProductMapper[A, B, P] {
 object ProductMapper {
 
   implicit def genericProductMapper[A, B, P <: Poly, ARepr <: HList, BRepr <: HList]
-  (implicit aGen: LabelledGeneric.Aux[A, ARepr],
-   bGen: LabelledGeneric.Aux[B, BRepr],
+  (implicit aGen: Generic.Aux[A, ARepr],
+   bGen: Generic.Aux[B, BRepr],
    mapper: Mapper.Aux[P, ARepr, BRepr]): ProductMapper[A, B, P] = (a: A) => {
     val aList = aGen.to(a)
     val bList = mapper.apply(aList)
@@ -90,6 +90,7 @@ object ProductMapper {
     class Builder[B] {
       def apply[P <: Poly](p: P)(implicit productMapper: ProductMapper[A, B, P]): B = productMapper.apply(a)
     }
+
   }
 
 }
@@ -108,8 +109,8 @@ object ProductMapperApp extends App {
     implicit val booleanCase: Case.Aux[Boolean, Int] = at(x => if (x) 1 else 0)
   }
 
-//  val iceCream2 = IceCream1("Sundae", 1, false).mapTo[IceCream2](conversions)
-//  println(iceCream2)
+  val iceCream2 = IceCream1("Sundae", 1, false).mapTo[IceCream2](conversions)
+  println(iceCream2)
 }
 
 
