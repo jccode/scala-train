@@ -1,7 +1,7 @@
 package ch_shapeless
 
-import shapeless.{Poly1, Poly2}
-import shapeless.{HList, ::, HNil}
+import shapeless.ops.hlist.Mapper
+import shapeless.{::, HList, HNil, LabelledGeneric, Poly, Poly1, Poly2}
 
 object ch07 {
 
@@ -53,3 +53,63 @@ object Ch07App extends App {
   testTotalPoly()
   mapTest()
 }
+
+
+trait ProductMapper[A, B, P] {
+  def apply(a: A): B
+}
+
+object ProductMapper {
+
+  implicit def genericProductMapper[A, B, P <: Poly, ARepr <: HList, BRepr <: HList]
+  (implicit aGen: LabelledGeneric.Aux[A, ARepr],
+   bGen: LabelledGeneric.Aux[B, BRepr],
+   mapper: Mapper.Aux[P, ARepr, BRepr]): ProductMapper[A, B, P] = (a: A) => {
+    val aList = aGen.to(a)
+    val bList = mapper.apply(aList)
+    bGen.from(bList)
+  }
+
+
+  // syntax
+  /*
+  implicit class ProductMapperOps[A, P](a: A) {
+    def mapTo[B](implicit productMapper: ProductMapper[A, B, P]): B = productMapper.apply(a)
+  }
+  */
+
+  implicit class ProductMapperOps[A](a: A) {
+    def mapTo[B]: Builder[B] = new Builder[B]
+
+    /*
+    class Builder[B, P](p: P) {
+      def apply(implicit productMapper: ProductMapper[A, B, P]) = productMapper.apply(a)
+    }
+    */
+
+    class Builder[B] {
+      def apply[P <: Poly](p: P)(implicit productMapper: ProductMapper[A, B, P]): B = productMapper.apply(a)
+    }
+  }
+
+}
+
+
+object ProductMapperApp extends App {
+  import ProductMapper._
+  case class IceCream1(name: String, numCherries: Int, inCone: Boolean)
+  case class IceCream2(name: String, hasCherries: Boolean, numCones: Int)
+
+  println("Hello")
+
+  object conversions extends Poly1 {
+    implicit val stringCase: Case.Aux[String, String] = at(x => x.toUpperCase)
+    implicit val intCase: Case.Aux[Int, Boolean] = at(x => if (x == 0) false else true)
+    implicit val booleanCase: Case.Aux[Boolean, Int] = at(x => if (x) 1 else 0)
+  }
+
+//  val iceCream2 = IceCream1("Sundae", 1, false).mapTo[IceCream2](conversions)
+//  println(iceCream2)
+}
+
+
